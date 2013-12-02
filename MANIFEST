@@ -11,3 +11,4 @@ xt/02.calc_rate_arrayref.t
 xt/03.format_percent.t
 xt/04.calc_compare_rate.t
 xt/05.sum_mean_median_arrayref.t
+xt/06.uniq_arrayref.t
