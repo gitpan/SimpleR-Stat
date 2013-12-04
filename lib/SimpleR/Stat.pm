@@ -7,13 +7,48 @@ require Exporter;
 calc_compare_rate
 sum_arrayref mean_arrayref median_arrayref
 uniq_arrayref uniq_arrayref_cnt
+conv_arrayref_to_hash
 );
 
 use strict;
 use warnings;
 
-our $VERSION     = 0.02;
+our $VERSION     = 0.03;
+our $DEFAULT_SEP = ',';
 
+sub conv_arrayref_to_hash {
+    #注意:重复的cut_fields会被覆盖掉
+    my ( $data, $cut_fields, $v_field ) = @_;
+    my $finish_cut = pop @$cut_fields;
+
+    my %result;
+    for my $row (@$data) {
+        my $s = \%result;
+
+        for my $cut (@$cut_fields) {
+            my $c = map_arrayref_row( $row, $cut );
+            $s->{$c} ||= {};
+            $s = $s->{$c};
+        }
+
+        my $fin_c = map_arrayref_row( $row, $finish_cut );
+        my $v     = map_arrayref_row( $row, $v_field );
+        $s->{$fin_c} = $v;
+    }
+
+    return \%result;
+} ## end sub conv_ref_to_hash
+
+sub map_arrayref_row {
+    my ( $row, $calc ) = @_;
+
+    my $t = ref($calc);
+    my $v = ($t eq 'CODE') ? $calc->($row) : 
+    ($t eq 'ARRAY') ? join($DEFAULT_SEP,  @{$row}[@$calc]) :
+    $row->[$calc];
+
+    return $v;
+}
 
 sub calc_rate {
     my ( $val, $sum ) = @_;

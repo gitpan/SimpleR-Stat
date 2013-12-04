@@ -97,4 +97,12 @@ rate_sub : 对计算出来的rate做进一步处理，例如 3/8 = 0.675，转�
     my $r = uniq_arrayref_cnt($d);
     # $r = 3
 
+=head2 conv_arrayref_to_hash 
+
+将arrayref转换为hash，注意重复的key会被覆盖掉，数据可能变少
+
+    my $data=[ ['a','b',3],['e','f',6], ['a','f',9]];
+    my $r = conv_arrayref_to_hash($data, [ 0, 1 ], 2);
+    # $r =  { a => { b => 3, f => 9 }, e => { f => 6 } },
+
 =cut
