@@ -17,16 +17,20 @@ require Exporter;
 use strict;
 use warnings;
 
-our $VERSION     = 0.05;
+use Tie::Autotie 'Tie::IxHash';
+
+
+our $VERSION     = 0.06;
 our $DEFAULT_SEP = ',';
 
 sub conv_arrayref_to_hash {
 
     #注意:重复的cut_fields会被覆盖掉
-    my ( $data, $cut_fields, $v_field ) = @_;
+    my ( $data, $cut_fields, $v_field , %opt) = @_;
     my $finish_cut = pop @$cut_fields;
 
-    my %result;
+    tie my (%result), 'Tie::IxHash' if($opt{remember_key_order});
+
     for my $row (@$data) {
         my $s = \%result;
 
@@ -129,9 +133,13 @@ sub median_arrayref {
 }
 
 sub uniq_arrayref {
-    my ($r) = @_;
-    my %d = map { $_ => 1 } @$r;
-    my @sort = sort keys(%d);
+    my ($r, %opt) = @_;
+
+    tie my (%d), 'Tie::IxHash' if($opt{remember_key_order});
+    %d = map { $_ => 1 } @$r;
+
+    my @sort = keys(%d);
+    @sort = sort @sort unless($opt{remember_key_order});
     return \@sort;
 }
 
@@ -173,4 +181,40 @@ sub calc_rate {
     return $rate;
 } ## end sub calc_rate
 
+#sub conv_hash_to_arrayref {
+    #my ($hash) = @_;
+    #my @data;
+    #while ( my ( $k, $v ) = each %$hash ) {
+        #my @temp = ($k);
+        #while ( ref($v) eq 'HASH' ) {
+            #while ( my ( $kt, $vt ) = each %$v ) {
+                #push @temp, $kt;
+            #}
+            #$v = $vt;
+        #}
+        #push @temp, $v;
+        #push @data, \@temp;
+    #}
+    #return \@data;
+#} ## end sub conv_hash_to_ref
+
+#sub transpose_arrayref {    #二层数组的行列转置
+    #my ($array_ref) = @_;
+    #my $col_num = $#$array_ref;
+    #my $row_num = max map { $#$_ } @$array_ref;
+
+    #my @data;
+    #for my $r ( 0 .. $row_num ) {
+        #my @temp = map { $array_ref->[$_][$r] } ( 0 .. $col_num );
+        #push @data, \@temp;
+    #}
+
+    #return \@data;
+#} ## end sub conv_col_to_row
+
+#sub get_compare_prefix {
+    #my ($vary) = @_;
+    #return ( $vary > 0 ? '+' : '' );
+#} ## 
+    
 1;
